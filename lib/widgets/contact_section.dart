@@ -5,13 +5,51 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class ContactSection extends StatelessWidget {
-  const ContactSection({super.key});
+class ContactSection extends StatefulWidget {
+  const ContactSection({Key? key}) : super(key: key);
+
+  @override
+  State<ContactSection> createState() => _ContactSectionState();
+}
+
+class _ContactSectionState extends State<ContactSection> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _subjectController = TextEditingController();
+  final _messageController = TextEditingController();
 
   Future<void> _launchURL(String url) async {
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url));
     }
+  }
+
+  InputDecoration _inputDecoration(String label, String hint) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: GoogleFonts.poppins(
+        color: Colors.white,
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+      ),
+      hintText: hint,
+      hintStyle: GoogleFonts.poppins(color: Colors.white60, fontSize: 14),
+      filled: true,
+      fillColor: Colors.black.withOpacity(0.3),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Color(0xFF64FFDA), width: 2),
+      ),
+    );
   }
 
   @override
@@ -36,9 +74,7 @@ class ContactSection extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-
           const SizedBox(height: 10),
-
           Container(
             width: 60,
             height: 4,
@@ -47,15 +83,11 @@ class ContactSection extends StatelessWidget {
               borderRadius: BorderRadius.all(Radius.circular(2)),
             ),
           ),
-
           const SizedBox(height: 40),
-
           AnimationLimiter(
             child: isMobile ? _buildMobileLayout() : _buildDesktopLayout(),
           ),
-
           const SizedBox(height: 60),
-
           // Footer
           AnimationConfiguration.staggeredList(
             position: 3,
@@ -141,9 +173,7 @@ class ContactSection extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
               const SizedBox(height: 20),
-
               Text(
                 'I\'m always interested in new opportunities and exciting projects. Whether you have a project in mind or just want to chat about technology, feel free to reach out!',
                 style: GoogleFonts.poppins(
@@ -152,9 +182,7 @@ class ContactSection extends StatelessWidget {
                   height: 1.6,
                 ),
               ),
-
               const SizedBox(height: 30),
-
               // Contact items
               _buildContactItem(
                 icon: Icons.email,
@@ -162,27 +190,21 @@ class ContactSection extends StatelessWidget {
                 subtitle: 'harshalgupta113@gmail.com',
                 onTap: () => _launchURL('mailto:harshalgupta113@gmail.com'),
               ),
-
               const SizedBox(height: 20),
-
               _buildContactItem(
                 icon: Icons.phone,
                 title: 'Phone',
                 subtitle: '+91 8433797599',
                 onTap: () => _launchURL('tel:+918433797599'),
               ),
-
               const SizedBox(height: 20),
-
               _buildContactItem(
                 icon: Icons.location_on,
                 title: 'Location',
                 subtitle: 'Mumbai, India',
                 onTap: () {},
               ),
-
               const SizedBox(height: 30),
-
               // Social links
               Row(
                 children: [
@@ -228,78 +250,142 @@ class ContactSection extends StatelessWidget {
                 width: 1,
               ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Send me a message',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Send me a message',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 30),
+                  // Name field
+                  TextFormField(
+                    controller: _nameController,
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
+                    decoration: _inputDecoration(
+                      'Your Name',
+                      'Enter your full name',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter your name';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  // Email field
+                  TextFormField(
+                    controller: _emailController,
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
+                    decoration: _inputDecoration(
+                      'Email Address',
+                      'Enter your email address',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter your email address';
+                      }
+                      final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                      if (!emailRegex.hasMatch(value)) {
+                        return 'Please enter a valid email address';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  // Subject field
+                  TextFormField(
+                    controller: _subjectController,
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
+                    decoration: _inputDecoration(
+                      'Subject',
+                      'What is this about?',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter a subject';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  // Message field
+                  TextFormField(
+                    controller: _messageController,
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
+                    decoration: _inputDecoration(
+                      'Message',
+                      'Tell me about your project...',
+                    ),
+                    maxLines: 5,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter your message';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 30),
+                  // Send button
+                  SizedBox(
+                    width: double.infinity,
+                    child: Builder(
+                      builder: (context) => ElevatedButton(
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            final name = _nameController.text.trim();
+                            final email = _emailController.text.trim();
+                            final subject = _subjectController.text.trim();
+                            final message = _messageController.text.trim();
+                            final mailto = Uri.encodeFull(
+                              'mailto:harshalgupta113@gmail.com?subject=${subject.isNotEmpty ? subject : 'Portfolio Contact'}&body=' +
+                                  'Name: $name\nEmail: $email\n\n$message',
+                            );
 
-                const SizedBox(height: 30),
+                            _showThankYouDialog(context);
 
-                // Name field
-                _buildTextField(
-                  label: 'Your Name',
-                  hint: 'Enter your full name',
-                ),
-
-                const SizedBox(height: 20),
-
-                // Email field
-                _buildTextField(
-                  label: 'Email Address',
-                  hint: 'Enter your email address',
-                ),
-
-                const SizedBox(height: 20),
-
-                // Subject field
-                _buildTextField(label: 'Subject', hint: 'What is this about?'),
-
-                const SizedBox(height: 20),
-
-                // Message field
-                _buildTextField(
-                  label: 'Message',
-                  hint: 'Tell me about your project...',
-                  maxLines: 5,
-                ),
-
-                const SizedBox(height: 30),
-
-                // Send button
-                SizedBox(
-                  width: double.infinity,
-                  child: Builder(
-                    builder: (context) => ElevatedButton(
-                      onPressed: () {
-                        // Handle form submission
-                        _showThankYouDialog(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF64FFDA),
-                        foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                            _launchURL(mailto);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF64FFDA),
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
-                      ),
-                      child: Text(
-                        'Send Message',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                        child: Text(
+                          'Send Message',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -359,55 +445,6 @@ class ContactSection extends StatelessWidget {
         ),
         child: Icon(icon, color: Colors.white70, size: 20),
       ),
-    );
-  }
-
-  Widget _buildTextField({
-    required String label,
-    required String hint,
-    int maxLines = 1,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.poppins(
-            color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          maxLines: maxLines,
-          style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: GoogleFonts.poppins(color: Colors.white60, fontSize: 14),
-            filled: true,
-            fillColor: Colors.black.withOpacity(0.3),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(
-                color: Colors.white.withOpacity(0.1),
-                width: 1,
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(
-                color: Colors.white.withOpacity(0.1),
-                width: 1,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFF64FFDA), width: 2),
-            ),
-          ),
-        ),
-      ],
     );
   }
 

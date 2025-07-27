@@ -53,7 +53,10 @@ class _PortfolioHomeState extends State<PortfolioHome> {
             child: Column(
               children: [
                 // Header Section
-                Container(key: _sectionKeys[0], child: const HeaderSection()),
+                Container(
+                  key: _sectionKeys[0],
+                  child: HeaderSection(onContactTap: () => scrollToSection(6)),
+                ),
 
                 // About Section
                 Container(key: _sectionKeys[1], child: const AboutSection()),

@@ -7,7 +7,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/foundation.dart';
 
 class HeaderSection extends StatelessWidget {
-  const HeaderSection({super.key});
+  final VoidCallback? onContactTap;
+  const HeaderSection({super.key, this.onContactTap});
 
   Future<void> _launchURL(String url) async {
     final uri = Uri.parse(url);
@@ -157,9 +158,7 @@ class HeaderSection extends StatelessWidget {
 
                 // CTA Button
                 ElevatedButton(
-                  onPressed: () {
-                    // Scroll to contact section
-                  },
+                  onPressed: onContactTap,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF64FFDA),
                     foregroundColor: Colors.black,
