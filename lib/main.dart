@@ -13,7 +13,7 @@ class PortfolioApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Harshal Naresh Gupta - Portfolio',
+      title: 'Harshal Gupta - Portfolio',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,

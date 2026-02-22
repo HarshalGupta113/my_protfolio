@@ -1,16 +1,41 @@
-# my_protfolio
+# Harshal Gupta Portfolio
 
-A new Flutter project.
+This is a responsive portfolio website and mobile app built with Flutter for Harshal Naresh Gupta.
+
+## Features
+
+- Responsive design for web and mobile
+- Sections: Header, About, Experience, Education, Projects, Skills, Contact
+- Animated text and transitions
+- Social and contact links
+- Contact form with email integration (opens user's email client)
+- Modern UI with custom fonts and icons
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+1. **Install Flutter:** [Flutter installation guide](https://docs.flutter.dev/get-started/install)
+2. **Clone the repository:**
+   ```sh
+   git clone https://github.com/HarshalGupta113/my_protfolio.git
+   ```
+3. **Install dependencies:**
+   ```sh
+   flutter pub get
+   ```
+4. **Run the app:**
+   - For web:
+     ```sh
+     flutter run -d chrome
+     ```
+   - For mobile:
+     ```sh
+     flutter run
+     ```
 
-A few resources to get you started if this is your first Flutter project:
+## Contact
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+For any queries or collaboration, reach out via the contact form in the app or email: harshalgupta113@gmail.com
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
+Built with Flutter ❤️

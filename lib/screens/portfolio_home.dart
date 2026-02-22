@@ -27,15 +27,73 @@ class _PortfolioHomeState extends State<PortfolioHome> {
     GlobalKey(), // Skills
     GlobalKey(), // Contact
   ];
+  int _activeSection = 0;
+  bool _isScrollingProgrammatically = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_isScrollingProgrammatically) return;
+
+    // Get the current scroll position
+    final scrollPosition = _scrollController.position.pixels;
+
+    // Find which section is currently visible
+    int newActiveSection = 0;
+
+    for (int i = _sectionKeys.length - 1; i >= 0; i--) {
+      final key = _sectionKeys[i];
+      final context = key.currentContext;
+
+      if (context != null) {
+        final RenderBox box = context.findRenderObject() as RenderBox;
+        final position = box.localToGlobal(Offset.zero);
+
+        // If the section is at or above the top of the screen (with some offset)
+        if (position.dy <= 100) {
+          newActiveSection = i;
+          break;
+        }
+      }
+    }
+
+    if (newActiveSection != _activeSection) {
+      setState(() {
+        _activeSection = newActiveSection;
+      });
+    }
+  }
 
   void scrollToSection(int index) {
+    _isScrollingProgrammatically = true;
+    setState(() {
+      _activeSection = index;
+    });
     final context = _sectionKeys[index].currentContext;
     if (context != null) {
       Scrollable.ensureVisible(
         context,
         duration: const Duration(seconds: 1),
         curve: Curves.easeInOut,
-      );
+      ).then((_) {
+        // Reset the flag after scrolling is complete
+        Future.delayed(const Duration(milliseconds: 100), () {
+          _isScrollingProgrammatically = false;
+        });
+      });
+    } else {
+      _isScrollingProgrammatically = false;
     }
   }
 
@@ -86,7 +144,11 @@ class _PortfolioHomeState extends State<PortfolioHome> {
           ),
 
           // Navigation Bar
-          if (!isMobile) PortfolioNavigationBar(onSectionTap: scrollToSection),
+          if (!isMobile)
+            PortfolioNavigationBar(
+              onSectionTap: scrollToSection,
+              activeIndex: _activeSection,
+            ),
         ],
       ),
       // Mobile drawer
@@ -99,6 +161,7 @@ class _PortfolioHomeState extends State<PortfolioHome> {
                   scrollToSection(index);
                 },
                 isMobileDrawer: true,
+                activeIndex: _activeSection,
               ),
             )
           : null,
