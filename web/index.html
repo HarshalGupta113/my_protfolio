@@ -94,10 +94,36 @@
   <script>
     window.addEventListener('flutter-first-frame', function () {
       const loading = document.querySelector('#loading');
-      loading.remove();
+      if (loading) {
+        loading.remove();
+      }
+    });
+    
+    // Add error handling
+    window.addEventListener('error', function(e) {
+      console.error('Error loading Flutter app:', e);
+      const loading = document.querySelector('#loading');
+      if (loading) {
+        loading.innerHTML = '<div style="text-align: center; color: #ff6b6b;"><div>Error loading app. Please refresh the page.</div><div style="font-size: 12px; margin-top: 10px;">Check console for details.</div></div>';
+      }
     });
   </script>
   
-  <script src="flutter_bootstrap.js" async></script>
+  <script>
+    {{flutter_js}}
+    {{flutter_build_config}}
+    
+    _flutter.loader.load({
+      serviceWorkerSettings: {
+        serviceWorkerVersion: {flutter_service_worker_version},
+      },
+      onEntrypointLoaded: async function(engineInitializer) {
+        let appRunner = await engineInitializer.initializeEngine({
+          renderer: "html", // Use HTML renderer instead of CanvasKit for better compatibility
+        });
+        await appRunner.runApp();
+      }
+    });
+  </script>
 </body>
 </html>
