@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'screens/portfolio_home.dart';
+import 'package:github_pages/github_pages.dart' as ghpages;
 
 void main() {
+  ghpages.publish('build/web', {});
   runApp(const PortfolioApp());
 }
 
