@@ -40,6 +40,7 @@ dependencies:
   animated_text_kit: ^4.2.2
   flutter_staggered_animations: ^1.1.1
   responsive_framework: ^1.1.1
+  github_pages: ^2.0.0
 
 dev_dependencies:
   flutter_test:
