@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:responsive_framework/responsive_framework.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
+import 'visual_effects.dart';
 
 class ContactSection extends StatefulWidget {
   const ContactSection({Key? key}) : super(key: key);
@@ -18,11 +21,99 @@ class _ContactSectionState extends State<ContactSection> {
   final _emailController = TextEditingController();
   final _subjectController = TextEditingController();
   final _messageController = TextEditingController();
+  bool _sending = false;
+
+  static const _inbox = 'harshalgupta113@gmail.com';
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _subjectController.dispose();
+    _messageController.dispose();
+    super.dispose();
+  }
 
   Future<void> _launchURL(String url) async {
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url));
     }
+  }
+
+  Future<void> _submitForm(BuildContext context) async {
+    if (_sending || !_formKey.currentState!.validate()) return;
+
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final subject = _subjectController.text.trim();
+    final message = _messageController.text.trim();
+
+    setState(() => _sending = true);
+
+    var delivered = false;
+    try {
+      final response = await http
+          .post(
+            Uri.parse('https://formsubmit.co/ajax/$_inbox'),
+            headers: const {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: jsonEncode({
+              'name': name,
+              'email': email,
+              '_replyto': email,
+              '_subject': subject.isNotEmpty
+                  ? 'Portfolio: $subject'
+                  : 'Portfolio Contact',
+              'message': message,
+              '_template': 'table',
+              '_captcha': 'false',
+            }),
+          )
+          .timeout(const Duration(seconds: 20));
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        delivered = true;
+      }
+    } catch (_) {
+      delivered = false;
+    }
+
+    if (!mounted) return;
+    setState(() => _sending = false);
+
+    if (delivered) {
+      _nameController.clear();
+      _emailController.clear();
+      _subjectController.clear();
+      _messageController.clear();
+      _showThankYouDialog(context);
+      return;
+    }
+
+    final mailto = Uri.encodeFull(
+      'mailto:$_inbox?subject=${subject.isNotEmpty ? subject : 'Portfolio Contact'}&body='
+      'Name: $name\nEmail: $email\n\n$message',
+    );
+    await _launchURL(mailto);
+    if (!mounted) return;
+    _showMessage(
+      context,
+      'Could not send directly. Your email app was opened as a backup.',
+    );
+  }
+
+  void _showMessage(BuildContext context, String text) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFF1A1A1A),
+        content: Text(
+          text,
+          style: GoogleFonts.poppins(color: Colors.white70),
+        ),
+      ),
+    );
   }
 
   InputDecoration _inputDecoration(String label, String hint) {
@@ -61,71 +152,45 @@ class _ContactSectionState extends State<ContactSection> {
         horizontal: isMobile ? 20 : 50,
         vertical: 80,
       ),
-      color: const Color(0xFF0A0A0A),
+      color: Colors.transparent,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section title
-          Text(
-            'Get In Touch',
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontSize: isMobile ? 28 : 36,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Container(
-            width: 60,
-            height: 4,
-            decoration: const BoxDecoration(
-              color: Color(0xFF64FFDA),
-              borderRadius: BorderRadius.all(Radius.circular(2)),
-            ),
-          ),
+          SectionHeading(title: 'Get In Touch', isMobile: isMobile),
           const SizedBox(height: 40),
-          AnimationLimiter(
-            child: isMobile ? _buildMobileLayout() : _buildDesktopLayout(),
-          ),
+          isMobile ? _buildMobileLayout() : _buildDesktopLayout(),
           const SizedBox(height: 60),
-          // Footer
-          AnimationConfiguration.staggeredList(
-            position: 3,
-            duration: const Duration(milliseconds: 800),
-            child: SlideAnimation(
-              verticalOffset: 50.0,
-              child: FadeInAnimation(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 30),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      top: BorderSide(
-                        color: Colors.white.withOpacity(0.1),
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '© 2025 Harshal Naresh Gupta. All rights reserved.',
-                        style: GoogleFonts.poppins(
-                          color: Colors.white60,
-                          fontSize: isMobile ? 12 : 14,
-                        ),
-                      ),
-                      if (!isMobile)
-                        Text(
-                          'Built with Flutter ❤️',
-                          style: GoogleFonts.poppins(
-                            color: Colors.white60,
-                            fontSize: 14,
-                          ),
-                        ),
-                    ],
+          ScrollReveal(
+            staggerIndex: 3,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 30),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    color: Colors.white.withOpacity(0.1),
+                    width: 1,
                   ),
                 ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '© 2025 Harshal Naresh Gupta. All rights reserved.',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white60,
+                      fontSize: isMobile ? 12 : 14,
+                    ),
+                  ),
+                  if (!isMobile)
+                    Text(
+                      'Built with Flutter ❤️',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white60,
+                        fontSize: 14,
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
@@ -156,13 +221,9 @@ class _ContactSectionState extends State<ContactSection> {
   }
 
   Widget _buildContactInfo() {
-    return AnimationConfiguration.staggeredList(
-      position: 0,
-      duration: const Duration(milliseconds: 800),
-      child: SlideAnimation(
-        verticalOffset: 50.0,
-        child: FadeInAnimation(
-          child: Column(
+    return ScrollReveal(
+      staggerIndex: 0,
+      child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
@@ -209,48 +270,36 @@ class _ContactSectionState extends State<ContactSection> {
               Row(
                 children: [
                   _buildSocialIcon(
-                    FontAwesomeIcons.linkedin,
-                    () => _launchURL(
+                    faIcon: FontAwesomeIcons.linkedin,
+                    onTap: () => _launchURL(
                       'https://www.linkedin.com/in/harshal-g-510624136/',
                     ),
                   ),
                   const SizedBox(width: 15),
                   _buildSocialIcon(
-                    FontAwesomeIcons.github,
-                    () => _launchURL('https://github.com/harshalgupta113'),
+                    faIcon: FontAwesomeIcons.github,
+                    onTap: () =>
+                        _launchURL('https://github.com/harshalgupta113'),
                   ),
                   const SizedBox(width: 15),
                   _buildSocialIcon(
-                    FontAwesomeIcons.envelope,
-                    () => _launchURL('mailto:harshalgupta113@gmail.com'),
+                    faIcon: FontAwesomeIcons.envelope,
+                    onTap: () =>
+                        _launchURL('mailto:harshalgupta113@gmail.com'),
                   ),
                 ],
               ),
             ],
           ),
-        ),
-      ),
     );
   }
 
   Widget _buildContactForm() {
-    return AnimationConfiguration.staggeredList(
-      position: 1,
-      duration: const Duration(milliseconds: 800),
-      child: SlideAnimation(
-        verticalOffset: 50.0,
-        child: FadeInAnimation(
-          child: Container(
-            padding: const EdgeInsets.all(30),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1A1A1A),
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.1),
-                width: 1,
-              ),
-            ),
-            child: Form(
+    return ScrollReveal(
+      staggerIndex: 1,
+      child: HoverCard(
+        padding: const EdgeInsets.all(30),
+        child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -345,41 +394,33 @@ class _ContactSectionState extends State<ContactSection> {
                     },
                   ),
                   const SizedBox(height: 30),
-                  // Send button
                   SizedBox(
                     width: double.infinity,
                     child: Builder(
-                      builder: (context) => ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            final name = _nameController.text.trim();
-                            final email = _emailController.text.trim();
-                            final subject = _subjectController.text.trim();
-                            final message = _messageController.text.trim();
-                            final mailto = Uri.encodeFull(
-                              'mailto:harshalgupta113@gmail.com?subject=${subject.isNotEmpty ? subject : 'Portfolio Contact'}&body=' +
-                                  'Name: $name\nEmail: $email\n\n$message',
-                            );
-
-                            _showThankYouDialog(context);
-
-                            _launchURL(mailto);
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF64FFDA),
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: Text(
-                          'Send Message',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+                      builder: (context) => GlowButton(
+                        borderRadius: BorderRadius.circular(10),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        onPressed: _sending
+                            ? null
+                            : () => _submitForm(context),
+                        child: Center(
+                          child: _sending
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.4,
+                                    color: Colors.black,
+                                  ),
+                                )
+                              : Text(
+                                  'Send Message',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black,
+                                  ),
+                                ),
                         ),
                       ),
                     ),
@@ -387,8 +428,6 @@ class _ContactSectionState extends State<ContactSection> {
                 ],
               ),
             ),
-          ),
-        ),
       ),
     );
   }
@@ -399,52 +438,24 @@ class _ContactSectionState extends State<ContactSection> {
     required String subtitle,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return _ContactRow(
+      icon: icon,
+      title: title,
+      subtitle: subtitle,
       onTap: onTap,
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF64FFDA).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: const Color(0xFF64FFDA), size: 20),
-          ),
-          const SizedBox(width: 15),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Text(
-                subtitle,
-                style: GoogleFonts.poppins(color: Colors.white70, fontSize: 14),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 
-  Widget _buildSocialIcon(IconData icon, VoidCallback onTap) {
-    return GestureDetector(
+  Widget _buildSocialIcon({
+    IconData? icon,
+    FaIconData? faIcon,
+    required VoidCallback onTap,
+  }) {
+    return HoverIconButton(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(icon, color: Colors.white70, size: 20),
-      ),
+      child: faIcon != null
+          ? FaIcon(faIcon, color: Colors.white70, size: 20)
+          : Icon(icon, color: Colors.white70, size: 20),
     );
   }
 
@@ -479,6 +490,91 @@ class _ContactSectionState extends State<ContactSection> {
           ],
         );
       },
+    );
+  }
+}
+
+class _ContactRow extends StatefulWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _ContactRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  State<_ContactRow> createState() => _ContactRowState();
+}
+
+class _ContactRowState extends State<_ContactRow> {
+  bool _hover = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hover = true),
+      onExit: (_) => setState(() => _hover = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: Motion.fast,
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+          transform: Matrix4.identity()
+            ..translateByDouble(_hover ? 4 : 0, 0, 0, 1),
+          child: Row(
+            children: [
+              AnimatedContainer(
+                duration: Motion.fast,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF64FFDA).withOpacity(_hover ? 0.2 : 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: _hover
+                      ? [
+                          BoxShadow(
+                            color: AppColors.accent.withOpacity(0.2),
+                            blurRadius: 12,
+                          ),
+                        ]
+                      : const [],
+                ),
+                child: Icon(
+                  widget.icon,
+                  color: const Color(0xFF64FFDA),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 15),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.title,
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    widget.subtitle,
+                    style: GoogleFonts.poppins(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -18,6 +18,8 @@ class PortfolioApp extends StatelessWidget {
       title: 'Harshal Gupta - Portfolio',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF0A0A0A),
         primarySwatch: Colors.blue,
         textTheme: GoogleFonts.poppinsTextTheme(),
         visualDensity: VisualDensity.adaptivePlatformDensity,
