@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0E1C18" />
+      <stop offset="100%" stop-color="#060908" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#64FFDA" />
+      <stop offset="100%" stop-color="#00D2FF" />
+    </linearGradient>
+    <filter id="ambientGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Outer Rounded Squircle -->
+  <rect x="16" y="16" width="480" height="480" rx="110" fill="url(#bgGrad)" stroke="#64FFDA" stroke-width="4" stroke-opacity="0.35"/>
+  
+  <!-- Ambient Inner Glow Circle -->
+  <circle cx="256" cy="256" r="130" fill="#64FFDA" opacity="0.09" filter="url(#ambientGlow)"/>
+  
+  <!-- Left Bracket < -->
+  <polyline points="145,205 105,256 145,307" fill="none" stroke="#64FFDA" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.75"/>
+  
+  <!-- Right Bracket > -->
+  <polyline points="367,205 407,256 367,307" fill="none" stroke="#64FFDA" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.75"/>
+  
+  <!-- Central 'H' Monogram -->
+  <line x1="205" y1="180" x2="205" y2="332" stroke="url(#accentGrad)" stroke-width="26" stroke-linecap="round" filter="url(#ambientGlow)"/>
+  <line x1="307" y1="180" x2="307" y2="332" stroke="url(#accentGrad)" stroke-width="26" stroke-linecap="round" filter="url(#ambientGlow)"/>
+  <line x1="205" y1="256" x2="307" y2="256" stroke="url(#accentGrad)" stroke-width="22" stroke-linecap="round"/>
+  
+  <!-- Accent Glowing Terminal Dot -->
+  <circle cx="256" cy="370" r="5" fill="#64FFDA" filter="url(#ambientGlow)"/>
+</svg>
